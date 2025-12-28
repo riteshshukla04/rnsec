@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { WebView } from 'react-native-webview';
 import CryptoJS from 'crypto-js';
+import { createMMKV } from 'react-native-mmkv';
 
 // HARDCODED_SECRETS - Rule should detect this
 const API_KEY = 'AKIAIOSFODNN7EXAMPLE';
@@ -15,6 +16,7 @@ const encryptionConfig = {
   key: 'hardcoded-aes-key-256-bit-value',
   iv: 'initialization-vector-16',
 };
+
 
 const config = {
   // HARDCODED_SECRETS - Rule should detect this

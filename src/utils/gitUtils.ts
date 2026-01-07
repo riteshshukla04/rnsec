@@ -35,35 +35,6 @@ export async function getChangedFiles(gitRef: string, rootDir: string): Promise<
 }
 
 /**
- * Get list of files changed in the current working directory (staged + unstaged)
- * @param rootDir - Root directory of the project
- * @returns Array of changed file paths
- */
-export async function getUncommittedFiles(rootDir: string): Promise<string[]> {
-  try {
-    const resolvedRoot = resolve(rootDir);
-    
-    const { stdout: unstaged } = await execAsync(
-      'git diff --name-only --diff-filter=ACMRT',
-      { cwd: resolvedRoot }
-    );
-    
-    const { stdout: staged } = await execAsync(
-      'git diff --cached --name-only --diff-filter=ACMRT',
-      { cwd: resolvedRoot }
-    );
-    
-    const allChanges = [...unstaged.split('\n'), ...staged.split('\n')]
-      .filter((line: string) => line.trim())
-      .map((file: string) => resolve(resolvedRoot, file));
-    
-    return [...new Set(allChanges)];
-  } catch (error) {
-    throw new Error(`Failed to get uncommitted files: ${error instanceof Error ? error.message : String(error)}`);
-  }
-}
-
-/**
  * Check if a directory is a git repository
  * @param rootDir - Directory to check
  * @returns True if directory is a git repository

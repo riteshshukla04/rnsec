@@ -38,6 +38,6 @@ export interface RnsecConfig {
     dataSource?: 'npm-audit' | 'hardcoded';
     excludeDevDependencies?: boolean;
   };
+  exclude?: string[]
   // Future: other config options
 }
-

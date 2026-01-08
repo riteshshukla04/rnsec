@@ -1,5 +1,5 @@
 import type { Finding } from '../types/findings.js';
-import type { Rule, RuleContext, RuleGroup, RnsecConfig } from '../types/ruleTypes.js';
+import type { Rule, RuleContext, RuleGroup } from '../types/ruleTypes.js';
 import { parseJSFile, parseJsonSafe } from './astParser.js';
 import { readFileContent } from '../utils/fileUtils.js';
 import { walkProjectFiles } from './fileWalker.js';
@@ -12,6 +12,7 @@ export class RuleEngine {
   private ruleGroups: RuleGroup[] = [];
   private ignoredRules: Set<string> = new Set();
   private skippedFiles: number = 0;
+  private excludedPaths: string[] = [];
 
   /**
    * Register a group of security rules
@@ -38,6 +39,22 @@ export class RuleEngine {
   }
 
   /**
+   * Set excluded paths
+   * @param exclude - Array of glob patterns to exclude
+   */
+  setExcludedPaths(exclude: string[]): void {
+    this.excludedPaths = exclude;
+  }
+
+  /**
+   * Get excluded paths
+   * @returns Array of glob patterns
+   */
+  getExcludedPaths(): string[] {
+    return this.excludedPaths;
+  }
+
+  /**
    * Get all registered rules from all rule groups, excluding ignored ones
    * @returns Array of all rules
    */
@@ -58,7 +75,7 @@ export class RuleEngine {
     const allFindings: Finding[] = [];
     this.skippedFiles = 0;
 
-    const fileGroup = await walkProjectFiles(rootDir);
+    const fileGroup = await walkProjectFiles(rootDir, this.excludedPaths);
     const allFiles = [
       ...fileGroup.jsFiles,
       ...fileGroup.jsonFiles,
@@ -70,7 +87,7 @@ export class RuleEngine {
 
     for (let i = 0; i < allFiles.length; i++) {
       const filePath = allFiles[i];
-      
+
       if (progressCallback) {
         progressCallback({ current: i + 1, total: totalFiles });
       }
@@ -79,8 +96,8 @@ export class RuleEngine {
       allFindings.push(...findings);
     }
 
-    return { 
-      findings: allFindings, 
+    return {
+      findings: allFindings,
       scannedFiles: totalFiles,
       skippedFiles: this.skippedFiles > 0 ? this.skippedFiles : undefined
     };
@@ -113,14 +130,14 @@ export class RuleEngine {
     } catch (error: any) {
       // Show minimal warning for file read errors
       this.skippedFiles++;
-      
+
       const fileName = filePath.split('/').pop();
       const errorType = error.code || error.message?.split(':')[0] || 'Error';
-      
+
       if (process.env.RNSEC_VERBOSE) {
         console.warn(`⚠️  Warning: Could not scan ${fileName} (${errorType})`);
       }
-      
+
       return [];
     }
   }
@@ -190,4 +207,3 @@ export class RuleEngine {
     );
   }
 }
-

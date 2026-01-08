@@ -8,7 +8,10 @@ export interface FileGroup {
   plistFiles: string[];
 }
 
-export async function walkProjectFiles(rootDir: string): Promise<FileGroup> {
+export async function walkProjectFiles(
+  rootDir: string,
+  additionalIgnore: string[] = []
+): Promise<FileGroup> {
   const resolvedRoot = resolve(rootDir);
 
   const patterns = {
@@ -18,7 +21,7 @@ export async function walkProjectFiles(rootDir: string): Promise<FileGroup> {
     plist: ['**/Info.plist'],
   };
 
-  const ignore = [
+  const defaultIgnore = [
     '**/node_modules/**',
     '**/dist/**',
     '**/build/**',
@@ -43,6 +46,8 @@ export async function walkProjectFiles(rootDir: string): Promise<FileGroup> {
     '**/*.e2e.js',
     '**/*.e2e.ts',
   ];
+
+  const ignore = [...defaultIgnore, ...additionalIgnore];
 
   const [jsFiles, jsonFiles, xmlFiles, plistFiles] = await Promise.all([
     fg(patterns.js, { cwd: resolvedRoot, ignore, absolute: true }),

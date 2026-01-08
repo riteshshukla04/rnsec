@@ -121,6 +121,13 @@ program
           console.log(chalk.yellow(`ℹ Ignoring ${config.ignoredRules.length} rule(s): ${config.ignoredRules.join(', ')}`));
         }
       }
+
+      if (config?.exclude) {
+        engine.setExcludedPaths(config.exclude);
+        if (config.exclude.length > 0 && !options.silent) {
+          console.log(chalk.yellow(`ℹ Excluding ${config.exclude.length} path(s): ${config.exclude.join(', ')}`));
+        }
+      }
       
       // Show npm scanning status
       if (config?.npmVulnerabilityScanning?.enabled === false && !options.silent) {
